@@ -16,3 +16,37 @@ html.dark body {
   background-color: #0a0a0a;
   color: #e5e5e5;
 }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #000000 transparent;
+}
+
+html.dark * {
+  scrollbar-color: #ffffff transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #000000;
+  border-radius: 9999px;
+  border: none;
+}
+
+html.dark *::-webkit-scrollbar-thumb {
+  background-color: #ffffff;
+}

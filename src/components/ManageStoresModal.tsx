@@ -42,7 +42,7 @@ export function ManageStoresModal({ onClose }: ManageStoresModalProps) {
             return (
               <li key={store.id} className="flex items-center gap-3 px-4 py-3">
                 <StoreLogo store={store} size={28} />
-                <span className="flex-1 text-slate-900 dark:text-neutral-100">{store.label}</span>
+                <span className="flex-1" />
                 <button
                   onClick={() => setStoreEnabled(store.id, !enabled)}
                   aria-label={enabled ? `Hide ${store.label}` : `Show ${store.label}`}

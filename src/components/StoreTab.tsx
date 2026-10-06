@@ -1,10 +1,17 @@
+import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { useListStore } from "../store/useListStore";
 import type { ShoppingItem, StoreId } from "../types";
 import { AddItemBar } from "./AddItemBar";
 import { Checklist } from "./Checklist";
 
-export function StoreTab({ storeId }: { storeId: StoreId }) {
+export function StoreTab({
+  storeId,
+  topTabBar,
+}: {
+  storeId: StoreId;
+  topTabBar?: ReactNode;
+}) {
   const allItems = useListStore((s) => s.items);
   const addItem = useListStore((s) => s.addItem);
   const toggleItem = useListStore((s) => s.toggleItem);
@@ -28,6 +35,7 @@ export function StoreTab({ storeId }: { storeId: StoreId }) {
   return (
     <div className="flex flex-col h-full">
       <AddItemBar onAdd={(name, qty) => addItem(storeId, name, qty)} />
+      {topTabBar}
       <Checklist
         items={items}
         onToggle={toggleItem}

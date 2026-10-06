@@ -1,6 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { DEFAULT_ENABLED_STORE_IDS, type CategoryId, type LibraryItem, type ShoppingItem, type StoreId } from "../types";
+import {
+  CATEGORIES,
+  DEFAULT_ENABLED_STORE_IDS,
+  slugifyCategoryName,
+  type CategoryId,
+  type CustomCategory,
+  type LibraryItem,
+  type ShoppingItem,
+  type StoreId,
+} from "../types";
 import { idbStorage } from "./persist";
 
 function makeId() {
@@ -11,6 +20,7 @@ interface ListState {
   items: ShoppingItem[];
   libraryItems: LibraryItem[];
   enabledStoreIds: StoreId[];
+  customCategories: CustomCategory[];
   addItem: (storeId: StoreId, name: string, quantity?: string) => void;
   toggleItem: (id: string) => void;
   deleteItem: (id: string) => void;
@@ -20,6 +30,7 @@ interface ListState {
   deleteLibraryItem: (id: string) => void;
   sendLibraryItemToStore: (libraryItemId: string, storeId: StoreId) => void;
   setStoreEnabled: (storeId: StoreId, enabled: boolean) => void;
+  addCustomCategory: (label: string) => void;
 }
 
 export const useListStore = create<ListState>()(
@@ -28,6 +39,7 @@ export const useListStore = create<ListState>()(
       items: [],
       libraryItems: [],
       enabledStoreIds: DEFAULT_ENABLED_STORE_IDS,
+      customCategories: [],
 
       addItem: (storeId, name, quantity) => {
         const trimmed = name.trim();
@@ -112,6 +124,27 @@ export const useListStore = create<ListState>()(
             : state.enabledStoreIds.filter((id) => id !== storeId),
         }));
       },
+
+      addCustomCategory: (label) => {
+        const trimmed = label.trim();
+        if (!trimmed) return;
+        set((state) => {
+          const existingIds = new Set([
+            ...CATEGORIES.map((c) => c.id),
+            ...state.customCategories.map((c) => c.id),
+          ]);
+          const base = slugifyCategoryName(trimmed);
+          let id = base;
+          let n = 2;
+          while (existingIds.has(id)) {
+            id = `${base}_${n}`;
+            n++;
+          }
+          return {
+            customCategories: [...state.customCategories, { id, label: trimmed }],
+          };
+        });
+      },
     }),
     {
       name: "chopping-list-store",
@@ -120,6 +153,7 @@ export const useListStore = create<ListState>()(
         items: state.items,
         libraryItems: state.libraryItems,
         enabledStoreIds: state.enabledStoreIds,
+        customCategories: state.customCategories,
       }),
     }
   )

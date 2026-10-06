@@ -1,6 +1,13 @@
 import { useState, type FormEvent } from "react";
+import { useListStore } from "../store/useListStore";
 import { useTheme } from "../theme/ThemeContext";
-import { CATEGORIES, CHROME_BG_DAY, CHROME_BG_NIGHT, type CategoryId } from "../types";
+import {
+  buildCategoryList,
+  CATEGORIES,
+  CHROME_BG_DAY,
+  CHROME_BG_NIGHT,
+  type CategoryId,
+} from "../types";
 import { CategoryPicker } from "./CategoryPicker";
 
 interface LibraryAddBarProps {
@@ -16,6 +23,8 @@ export function LibraryAddBar({ onAdd }: LibraryAddBarProps) {
   const [categoryId, setCategoryId] = useState<CategoryId>(CATEGORIES[0].id);
   const { theme } = useTheme();
   const isNight = theme === "night";
+  const customCategories = useListStore((s) => s.customCategories);
+  const categories = buildCategoryList(customCategories);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -46,7 +55,12 @@ export function LibraryAddBar({ onAdd }: LibraryAddBarProps) {
         />
       </div>
       <div className="flex gap-2">
-        <CategoryPicker value={categoryId} onChange={setCategoryId} className="flex-1" />
+        <CategoryPicker
+          value={categoryId}
+          onChange={setCategoryId}
+          className="flex-1"
+          categories={categories}
+        />
         <button
           type="submit"
           className="shrink-0 rounded-lg border px-4 py-2 font-medium transition-colors"

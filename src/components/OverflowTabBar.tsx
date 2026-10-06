@@ -2,7 +2,7 @@ import { CHROME_BG_DAY, CHROME_BG_NIGHT, type StoreDef, type TabId } from "../ty
 import { useTheme } from "../theme/ThemeContext";
 import { StoreLogo } from "./StoreLogo";
 
-export function TabBar({
+export function OverflowTabBar({
   stores,
   active,
   onChange,
@@ -14,9 +14,11 @@ export function TabBar({
   const { theme } = useTheme();
   const chromeBg = theme === "night" ? CHROME_BG_NIGHT : CHROME_BG_DAY;
 
+  if (stores.length === 0) return null;
+
   return (
     <nav
-      className="flex border-t border-slate-200 dark:border-neutral-800 transition-colors"
+      className="flex border-b border-slate-200 dark:border-neutral-800 transition-colors"
       style={{ backgroundColor: chromeBg }}
     >
       {stores.map((store) => {
@@ -29,7 +31,7 @@ export function TabBar({
             className="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors"
             style={{
               color: isActive ? store.color : "#a3a3a3",
-              borderTop: isActive ? `2px solid ${store.color}` : "2px solid transparent",
+              borderBottom: isActive ? `2px solid ${store.color}` : "2px solid transparent",
             }}
           >
             <StoreLogo store={store} size={30} />

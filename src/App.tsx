@@ -1,8 +1,8 @@
-import { Settings } from "lucide-react";
+import { Library, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LibraryTab } from "./components/LibraryTab";
 import { ManageStoresModal } from "./components/ManageStoresModal";
-import { StoreLogo } from "./components/StoreLogo";
+import { OverflowTabBar } from "./components/OverflowTabBar";
 import { StoreTab } from "./components/StoreTab";
 import { TabBar } from "./components/TabBar";
 import { ThemeToggle } from "./components/ThemeToggle";
@@ -17,6 +17,8 @@ import {
   type TabId,
 } from "./types";
 
+const MAX_BOTTOM_STORES = 5;
+
 function AppShell() {
   const [tab, setTab] = useState<TabId>(STORES[0].id);
   const [manageStoresOpen, setManageStoresOpen] = useState(false);
@@ -25,6 +27,9 @@ function AppShell() {
   const enabledStoreIds = useListStore((s) => s.enabledStoreIds);
 
   const activeStore = STORES.find((s) => s.id === tab);
+  const visibleStores = STORES.filter((s) => enabledStoreIds.includes(s.id));
+  const bottomStores = visibleStores.slice(0, MAX_BOTTOM_STORES);
+  const overflowStores = visibleStores.slice(MAX_BOTTOM_STORES);
 
   useEffect(() => {
     if (activeStore && !enabledStoreIds.includes(activeStore.id)) {
@@ -41,6 +46,13 @@ function AppShell() {
       ? LIBRARY_BG_NIGHT
       : LIBRARY_BG_DAY;
   const chromeBg = isNight ? CHROME_BG_NIGHT : CHROME_BG_DAY;
+  const isLibraryActive = tab === "library";
+
+  const hasOverflow = overflowStores.length > 0;
+  const topTabBar =
+    hasOverflow && !isLibraryActive ? (
+      <OverflowTabBar stores={overflowStores} active={tab} onChange={setTab} />
+    ) : null;
 
   return (
     <div
@@ -51,28 +63,37 @@ function AppShell() {
         className="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 dark:border-neutral-800 h-14 transition-colors"
         style={{ backgroundColor: chromeBg }}
       >
-        {activeStore ? (
-          <StoreLogo store={activeStore} size={32} />
-        ) : (
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-neutral-100">Library</h1>
-        )}
+        <button
+          onClick={() => setTab("library")}
+          aria-label="Library"
+          style={{ color: isLibraryActive ? (isNight ? "#ffffff" : "#18181b") : "#a3a3a3" }}
+        >
+          <Library size={22} strokeWidth={1.75} />
+        </button>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setManageStoresOpen(true)}
-            aria-label="Manage stores"
+            aria-label="Add store"
             className="text-slate-500 dark:text-neutral-400"
           >
-            <Settings size={20} strokeWidth={1.75} />
+            <Plus size={22} strokeWidth={1.25} />
           </button>
           <ThemeToggle />
         </div>
       </header>
 
       <main className="flex-1 overflow-hidden">
-        {tab === "library" ? <LibraryTab /> : <StoreTab storeId={tab} />}
+        {isLibraryActive ? (
+          <LibraryTab />
+        ) : (
+          <StoreTab storeId={tab} topTabBar={topTabBar} />
+        )}
       </main>
 
-      <TabBar active={tab} onChange={setTab} />
+      <TabBar stores={bottomStores} active={tab} onChange={setTab} />
+      {hasOverflow && isLibraryActive && (
+        <TabBar stores={overflowStores} active={tab} onChange={setTab} />
+      )}
 
       {manageStoresOpen && <ManageStoresModal onClose={() => setManageStoresOpen(false)} />}
     </div>

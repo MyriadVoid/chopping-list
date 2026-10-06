@@ -4,16 +4,28 @@ import {
   Beef,
   Candy,
   Carrot,
+  createLucideIcon,
   CupSoda,
-  Croissant,
+  Fish,
   Milk,
   Package,
   Popcorn,
   Shapes,
   Snowflake,
   SprayCan,
+  Tag,
   type LucideIcon,
 } from "lucide-react";
+
+const BreadSlice: LucideIcon = createLucideIcon({
+  name: "bread-slice",
+  node: [
+    ["path", { d: "M5 20V11a7 7 0 0 1 14 0v9z", key: "slice-body" }],
+    ["circle", { cx: "10", cy: "9.5", r: "0.6", fill: "currentColor", stroke: "none", key: "slice-bubble-1" }],
+    ["circle", { cx: "14.5", cy: "11.5", r: "0.6", fill: "currentColor", stroke: "none", key: "slice-bubble-2" }],
+    ["circle", { cx: "11.5", cy: "14.5", r: "0.6", fill: "currentColor", stroke: "none", key: "slice-bubble-3" }],
+  ],
+});
 
 export type StoreId = "aldi" | "migros" | "coop" | "denner" | "lidl" | "manor";
 
@@ -55,7 +67,8 @@ export type CategoryId =
   | "fruits"
   | "vegetables"
   | "dairy_eggs"
-  | "meat_fish"
+  | "meat"
+  | "fish"
   | "bakery"
   | "pantry"
   | "frozen"
@@ -64,7 +77,8 @@ export type CategoryId =
   | "sweets"
   | "household"
   | "personal_care"
-  | "other";
+  | "other"
+  | (string & {});
 
 export interface CategoryDef {
   id: CategoryId;
@@ -76,8 +90,9 @@ export const CATEGORIES: CategoryDef[] = [
   { id: "fruits", label: "Fruits", icon: Apple },
   { id: "vegetables", label: "Vegetables", icon: Carrot },
   { id: "dairy_eggs", label: "Dairy & Eggs", icon: Milk },
-  { id: "meat_fish", label: "Meat & Fish", icon: Beef },
-  { id: "bakery", label: "Bakery", icon: Croissant },
+  { id: "meat", label: "Meat", icon: Beef },
+  { id: "fish", label: "Fish", icon: Fish },
+  { id: "bakery", label: "Bakery", icon: BreadSlice },
   { id: "pantry", label: "Pantry & Dry Goods", icon: Package },
   { id: "frozen", label: "Frozen", icon: Snowflake },
   { id: "beverages", label: "Beverages", icon: CupSoda },
@@ -87,6 +102,29 @@ export const CATEGORIES: CategoryDef[] = [
   { id: "personal_care", label: "Personal Care", icon: Bath },
   { id: "other", label: "Other", icon: Shapes },
 ];
+
+export interface CustomCategory {
+  id: string;
+  label: string;
+}
+
+export const CUSTOM_CATEGORY_ICON: LucideIcon = Tag;
+
+export function slugifyCategoryName(label: string): string {
+  const base = label
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return base || "category";
+}
+
+export function buildCategoryList(customCategories: CustomCategory[]): CategoryDef[] {
+  return [
+    ...CATEGORIES,
+    ...customCategories.map((c) => ({ id: c.id, label: c.label, icon: CUSTOM_CATEGORY_ICON })),
+  ];
+}
 
 export interface LibraryItem {
   id: string;

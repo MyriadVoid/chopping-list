@@ -1,33 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../theme/ThemeContext";
 import type { StoreDef } from "../types";
 
 const EXTENSIONS = ["svg", "png", "webp", "jpg"];
 
+type Mode = "dark" | "normal" | "fallback";
+
 export function StoreLogo({ store, size = 28 }: { store: StoreDef; size?: number }) {
-  const [extIndex, setExtIndex] = useState(0);
   const { theme } = useTheme();
   const isNight = theme === "night";
+  const [mode, setMode] = useState<Mode>(isNight ? "dark" : "normal");
+  const [extIndex, setExtIndex] = useState(0);
 
-  if (extIndex < EXTENSIONS.length) {
-    const pad = Math.round(size * 0.15);
+  useEffect(() => {
+    setMode(isNight ? "dark" : "normal");
+    setExtIndex(0);
+  }, [isNight, store.id]);
+
+  function handleError() {
+    if (extIndex < EXTENSIONS.length - 1) {
+      setExtIndex((i) => i + 1);
+      return;
+    }
+    if (mode === "dark") {
+      setMode("normal");
+      setExtIndex(0);
+    } else {
+      setMode("fallback");
+    }
+  }
+
+  if (mode !== "fallback") {
+    const suffix = mode === "dark" ? "-dark" : "";
     return (
-      <span
-        className="inline-flex items-center justify-center rounded-md"
-        style={{
-          backgroundColor: isNight ? "#f5f5f5" : "transparent",
-          padding: isNight ? pad : 0,
-        }}
-      >
-        <img
-          key={extIndex}
-          src={`/logos/${store.id}.${EXTENSIONS[extIndex]}`}
-          alt={`${store.label} logo`}
-          style={{ height: size, maxWidth: size * 3 }}
-          className="object-contain"
-          onError={() => setExtIndex((i) => i + 1)}
-        />
-      </span>
+      <img
+        key={`${mode}-${extIndex}`}
+        src={`/logos/${store.id}${suffix}.${EXTENSIONS[extIndex]}`}
+        alt={`${store.label} logo`}
+        style={{ height: size, maxWidth: size * 3 }}
+        className="object-contain"
+        onError={handleError}
+      />
     );
   }
 
