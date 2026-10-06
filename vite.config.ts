@@ -14,7 +14,7 @@ export default defineConfig({
         name: "Chopping List",
         short_name: "Chopping List",
         description: "Shopping lists per store, plus a menu/ingredients planner.",
-        theme_color: "#16a34a",
+        theme_color: "#f97316",
         background_color: "#f8fafc",
         display: "standalone",
         start_url: "/",
