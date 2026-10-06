@@ -1,23 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { CATEGORIES, type CategoryDef, type CategoryId } from "../types";
+import { getCategoryIcon, type CategoryDef, type CategoryId } from "../types";
 
 interface CategoryPickerProps {
   value: CategoryId;
   onChange: (categoryId: CategoryId) => void;
   className?: string;
-  categories?: CategoryDef[];
+  categories: CategoryDef[];
 }
 
-export function CategoryPicker({
-  value,
-  onChange,
-  className,
-  categories = CATEGORIES,
-}: CategoryPickerProps) {
+export function CategoryPicker({ value, onChange, className, categories }: CategoryPickerProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const selected = categories.find((c) => c.id === value) ?? categories[0];
-  const SelectedIcon = selected.icon;
+  const SelectedIcon = getCategoryIcon(selected.iconKey);
 
   useEffect(() => {
     if (!open) return;
@@ -58,7 +53,7 @@ export function CategoryPicker({
       {open && (
         <ul className="absolute z-10 mt-1 w-full max-h-64 overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
           {categories.map((category) => {
-            const CategoryIcon = category.icon;
+            const CategoryIcon = getCategoryIcon(category.iconKey);
             const isSelected = category.id === value;
             return (
               <li key={category.id}>

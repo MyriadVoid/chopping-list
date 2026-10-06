@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
-  CATEGORIES,
+  DEFAULT_CATEGORIES,
+  DEFAULT_CATEGORY_ICON_KEY,
   DEFAULT_ENABLED_STORE_IDS,
   slugifyCategoryName,
+  type CategoryDef,
   type CategoryId,
-  type CustomCategory,
   type LibraryItem,
   type ShoppingItem,
   type StoreId,
@@ -20,7 +21,7 @@ interface ListState {
   items: ShoppingItem[];
   libraryItems: LibraryItem[];
   enabledStoreIds: StoreId[];
-  customCategories: CustomCategory[];
+  categories: CategoryDef[];
   addItem: (storeId: StoreId, name: string, quantity?: string) => void;
   toggleItem: (id: string) => void;
   deleteItem: (id: string) => void;
@@ -30,7 +31,8 @@ interface ListState {
   deleteLibraryItem: (id: string) => void;
   sendLibraryItemToStore: (libraryItemId: string, storeId: StoreId) => void;
   setStoreEnabled: (storeId: StoreId, enabled: boolean) => void;
-  addCustomCategory: (label: string) => void;
+  addCategory: (label: string, iconKey: string) => void;
+  deleteCategory: (id: string) => void;
 }
 
 export const useListStore = create<ListState>()(
@@ -39,7 +41,7 @@ export const useListStore = create<ListState>()(
       items: [],
       libraryItems: [],
       enabledStoreIds: DEFAULT_ENABLED_STORE_IDS,
-      customCategories: [],
+      categories: DEFAULT_CATEGORIES,
 
       addItem: (storeId, name, quantity) => {
         const trimmed = name.trim();
@@ -125,14 +127,11 @@ export const useListStore = create<ListState>()(
         }));
       },
 
-      addCustomCategory: (label) => {
+      addCategory: (label, iconKey) => {
         const trimmed = label.trim();
         if (!trimmed) return;
         set((state) => {
-          const existingIds = new Set([
-            ...CATEGORIES.map((c) => c.id),
-            ...state.customCategories.map((c) => c.id),
-          ]);
+          const existingIds = new Set(state.categories.map((c) => c.id));
           const base = slugifyCategoryName(trimmed);
           let id = base;
           let n = 2;
@@ -141,7 +140,26 @@ export const useListStore = create<ListState>()(
             n++;
           }
           return {
-            customCategories: [...state.customCategories, { id, label: trimmed }],
+            categories: [
+              ...state.categories,
+              { id, label: trimmed, iconKey: iconKey || DEFAULT_CATEGORY_ICON_KEY },
+            ],
+          };
+        });
+      },
+
+      deleteCategory: (id) => {
+        set((state) => {
+          if (state.categories.length <= 1) return state;
+          const remaining = state.categories.filter((c) => c.id !== id);
+          const fallbackId = remaining.some((c) => c.id === "other")
+            ? "other"
+            : remaining[0].id;
+          return {
+            categories: remaining,
+            libraryItems: state.libraryItems.map((item) =>
+              item.categoryId === id ? { ...item, categoryId: fallbackId } : item
+            ),
           };
         });
       },
@@ -153,7 +171,7 @@ export const useListStore = create<ListState>()(
         items: state.items,
         libraryItems: state.libraryItems,
         enabledStoreIds: state.enabledStoreIds,
-        customCategories: state.customCategories,
+        categories: state.categories,
       }),
     }
   )

@@ -1,5 +1,6 @@
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { CategoryDef, LibraryItem, StoreId } from "../types";
+import { getCategoryIcon, type CategoryDef, type LibraryItem, type StoreId } from "../types";
 import { LibraryItemRow } from "./LibraryItemRow";
 
 interface CategorySectionProps {
@@ -8,6 +9,7 @@ interface CategorySectionProps {
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => void;
   onSendToStore: (itemId: string, storeId: StoreId) => void;
+  onDeleteCategory: (categoryId: string) => void;
 }
 
 export function CategorySection({
@@ -16,9 +18,10 @@ export function CategorySection({
   onToggleFavorite,
   onDelete,
   onSendToStore,
+  onDeleteCategory,
 }: CategorySectionProps) {
   const [open, setOpen] = useState(false);
-  const Icon = category.icon;
+  const Icon = getCategoryIcon(category.iconKey);
 
   return (
     <div className="border-b border-slate-200 dark:border-neutral-800">
@@ -30,8 +33,18 @@ export function CategorySection({
           <Icon size={18} strokeWidth={1.75} className="shrink-0" />
           {category.label}
         </span>
-        <span className="flex items-center gap-2 text-slate-400 dark:text-neutral-500">
+        <span className="flex items-center gap-3 text-slate-400 dark:text-neutral-500">
           {items.length > 0 && <span className="text-sm">{items.length}</span>}
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteCategory(category.id);
+            }}
+            aria-label={`Delete ${category.label} category`}
+            className="active:text-red-500"
+          >
+            <Trash2 size={16} strokeWidth={1.75} />
+          </span>
           <svg
             viewBox="0 0 24 24"
             width={16}

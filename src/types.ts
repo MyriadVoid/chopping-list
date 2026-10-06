@@ -4,16 +4,31 @@ import {
   Beef,
   Candy,
   Carrot,
+  Cherry,
+  Citrus,
+  Coffee,
+  Cookie,
   createLucideIcon,
   CupSoda,
+  Drumstick,
+  Egg,
   Fish,
+  IceCreamCone,
+  Leaf,
   Milk,
+  Nut,
   Package,
+  Pizza,
   Popcorn,
+  Sandwich,
   Shapes,
+  ShoppingBasket,
   Snowflake,
+  Soup,
   SprayCan,
   Tag,
+  Utensils,
+  Wine,
   type LucideIcon,
 } from "lucide-react";
 
@@ -63,52 +78,73 @@ export interface ShoppingItem {
   createdAt: number;
 }
 
-export type CategoryId =
-  | "fruits"
-  | "vegetables"
-  | "dairy_eggs"
-  | "meat"
-  | "fish"
-  | "bakery"
-  | "pantry"
-  | "frozen"
-  | "beverages"
-  | "savory_snacks"
-  | "sweets"
-  | "household"
-  | "personal_care"
-  | "other"
-  | (string & {});
+export type CategoryId = string;
 
 export interface CategoryDef {
   id: CategoryId;
   label: string;
-  icon: LucideIcon;
+  iconKey: string;
 }
 
-export const CATEGORIES: CategoryDef[] = [
-  { id: "fruits", label: "Fruits", icon: Apple },
-  { id: "vegetables", label: "Vegetables", icon: Carrot },
-  { id: "dairy_eggs", label: "Dairy & Eggs", icon: Milk },
-  { id: "meat", label: "Meat", icon: Beef },
-  { id: "fish", label: "Fish", icon: Fish },
-  { id: "bakery", label: "Bakery", icon: BreadSlice },
-  { id: "pantry", label: "Pantry & Dry Goods", icon: Package },
-  { id: "frozen", label: "Frozen", icon: Snowflake },
-  { id: "beverages", label: "Beverages", icon: CupSoda },
-  { id: "savory_snacks", label: "Savory Snacks", icon: Popcorn },
-  { id: "sweets", label: "Sweets", icon: Candy },
-  { id: "household", label: "Household", icon: SprayCan },
-  { id: "personal_care", label: "Personal Care", icon: Bath },
-  { id: "other", label: "Other", icon: Shapes },
+// Every icon a category (default or user-created) can use.
+export const ICON_OPTIONS: { key: string; icon: LucideIcon }[] = [
+  { key: "apple", icon: Apple },
+  { key: "carrot", icon: Carrot },
+  { key: "leaf", icon: Leaf },
+  { key: "milk", icon: Milk },
+  { key: "egg", icon: Egg },
+  { key: "beef", icon: Beef },
+  { key: "drumstick", icon: Drumstick },
+  { key: "fish", icon: Fish },
+  { key: "bread", icon: BreadSlice },
+  { key: "sandwich", icon: Sandwich },
+  { key: "package", icon: Package },
+  { key: "snowflake", icon: Snowflake },
+  { key: "cup-soda", icon: CupSoda },
+  { key: "coffee", icon: Coffee },
+  { key: "wine", icon: Wine },
+  { key: "popcorn", icon: Popcorn },
+  { key: "candy", icon: Candy },
+  { key: "cookie", icon: Cookie },
+  { key: "ice-cream", icon: IceCreamCone },
+  { key: "pizza", icon: Pizza },
+  { key: "soup", icon: Soup },
+  { key: "cherry", icon: Cherry },
+  { key: "citrus", icon: Citrus },
+  { key: "nut", icon: Nut },
+  { key: "basket", icon: ShoppingBasket },
+  { key: "utensils", icon: Utensils },
+  { key: "spray-can", icon: SprayCan },
+  { key: "bath", icon: Bath },
+  { key: "tag", icon: Tag },
+  { key: "shapes", icon: Shapes },
 ];
 
-export interface CustomCategory {
-  id: string;
-  label: string;
+const ICON_LOOKUP = new Map(ICON_OPTIONS.map((o) => [o.key, o.icon]));
+
+export function getCategoryIcon(iconKey: string): LucideIcon {
+  return ICON_LOOKUP.get(iconKey) ?? Tag;
 }
 
-export const CUSTOM_CATEGORY_ICON: LucideIcon = Tag;
+export const DEFAULT_CATEGORY_ICON_KEY = "tag";
+
+export const DEFAULT_CATEGORIES: CategoryDef[] = [
+  { id: "fruits", label: "Fruits", iconKey: "apple" },
+  { id: "vegetables", label: "Vegetables", iconKey: "carrot" },
+  { id: "vegetarian", label: "Vegetarian", iconKey: "leaf" },
+  { id: "dairy_eggs", label: "Dairy & Eggs", iconKey: "milk" },
+  { id: "meat", label: "Meat", iconKey: "beef" },
+  { id: "fish", label: "Fish", iconKey: "fish" },
+  { id: "bakery", label: "Bakery", iconKey: "bread" },
+  { id: "pantry", label: "Pantry & Dry Goods", iconKey: "package" },
+  { id: "frozen", label: "Frozen", iconKey: "snowflake" },
+  { id: "beverages", label: "Beverages", iconKey: "cup-soda" },
+  { id: "savory_snacks", label: "Savory Snacks", iconKey: "popcorn" },
+  { id: "sweets", label: "Sweets", iconKey: "candy" },
+  { id: "household", label: "Household", iconKey: "spray-can" },
+  { id: "personal_care", label: "Personal Care", iconKey: "bath" },
+  { id: "other", label: "Other", iconKey: "shapes" },
+];
 
 export function slugifyCategoryName(label: string): string {
   const base = label
@@ -117,13 +153,6 @@ export function slugifyCategoryName(label: string): string {
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
   return base || "category";
-}
-
-export function buildCategoryList(customCategories: CustomCategory[]): CategoryDef[] {
-  return [
-    ...CATEGORIES,
-    ...customCategories.map((c) => ({ id: c.id, label: c.label, icon: CUSTOM_CATEGORY_ICON })),
-  ];
 }
 
 export interface LibraryItem {

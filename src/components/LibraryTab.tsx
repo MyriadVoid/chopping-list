@@ -3,7 +3,13 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { useListStore } from "../store/useListStore";
 import { useTheme } from "../theme/ThemeContext";
-import { buildCategoryList, CHROME_BG_DAY, CHROME_BG_NIGHT } from "../types";
+import {
+  CHROME_BG_DAY,
+  CHROME_BG_NIGHT,
+  DEFAULT_CATEGORY_ICON_KEY,
+  ICON_OPTIONS,
+  getCategoryIcon,
+} from "../types";
 import { CategorySection } from "./CategorySection";
 import { LibraryItemRow } from "./LibraryItemRow";
 import { LibraryAddBar } from "./LibraryAddBar";
@@ -16,16 +22,16 @@ export function LibraryTab({ topTabBar }: { topTabBar?: ReactNode }) {
   const toggleLibraryItemFavorite = useListStore((s) => s.toggleLibraryItemFavorite);
   const deleteLibraryItem = useListStore((s) => s.deleteLibraryItem);
   const sendLibraryItemToStore = useListStore((s) => s.sendLibraryItemToStore);
-  const customCategories = useListStore((s) => s.customCategories);
-  const addCustomCategory = useListStore((s) => s.addCustomCategory);
+  const categories = useListStore((s) => s.categories);
+  const addCategory = useListStore((s) => s.addCategory);
+  const deleteCategory = useListStore((s) => s.deleteCategory);
 
   const [sortMode, setSortMode] = useState<SortMode>("category");
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryIcon, setNewCategoryIcon] = useState(DEFAULT_CATEGORY_ICON_KEY);
   const { theme } = useTheme();
   const isNight = theme === "night";
-
-  const allCategories = buildCategoryList(customCategories);
 
   const alphabetical = [...libraryItems].sort((a, b) =>
     a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
@@ -44,8 +50,9 @@ export function LibraryTab({ topTabBar }: { topTabBar?: ReactNode }) {
 
   function submitNewCategory() {
     if (!newCategoryName.trim()) return;
-    addCustomCategory(newCategoryName);
+    addCategory(newCategoryName, newCategoryIcon);
     setNewCategoryName("");
+    setNewCategoryIcon(DEFAULT_CATEGORY_ICON_KEY);
     setAddingCategory(false);
   }
 
@@ -88,7 +95,7 @@ export function LibraryTab({ topTabBar }: { topTabBar?: ReactNode }) {
       <div className="flex-1 overflow-y-auto mt-2">
         {sortMode === "category" ? (
           <>
-            {allCategories.map((category) => (
+            {categories.map((category) => (
               <CategorySection
                 key={category.id}
                 category={category}
@@ -98,6 +105,7 @@ export function LibraryTab({ topTabBar }: { topTabBar?: ReactNode }) {
                 onToggleFavorite={toggleLibraryItemFavorite}
                 onDelete={deleteLibraryItem}
                 onSendToStore={sendLibraryItemToStore}
+                onDeleteCategory={deleteCategory}
               />
             ))}
 
@@ -107,36 +115,72 @@ export function LibraryTab({ topTabBar }: { topTabBar?: ReactNode }) {
                   e.preventDefault();
                   submitNewCategory();
                 }}
-                className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-neutral-800"
+                className="flex flex-col gap-2 px-4 py-3 border-b border-slate-200 dark:border-neutral-800"
               >
-                <input
-                  autoFocus
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Category name…"
-                  className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500"
-                />
-                <button
-                  type="submit"
-                  className="shrink-0 rounded-lg border px-3 py-2 text-sm font-medium"
-                  style={
-                    isNight
-                      ? { backgroundColor: "#000000", color: "#ffffff", borderColor: "#525252" }
-                      : { backgroundColor: "#d4d4d8", color: "#18181b", borderColor: "#d4d4d8" }
-                  }
-                >
-                  Add
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAddingCategory(false);
-                    setNewCategoryName("");
-                  }}
-                  className="shrink-0 text-slate-400 dark:text-neutral-500 text-sm px-1"
-                >
-                  Cancel
-                </button>
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Category name…"
+                    className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+                  />
+                  <button
+                    type="submit"
+                    className="shrink-0 rounded-lg border px-3 py-2 text-sm font-medium"
+                    style={
+                      isNight
+                        ? { backgroundColor: "#000000", color: "#ffffff", borderColor: "#525252" }
+                        : { backgroundColor: "#d4d4d8", color: "#18181b", borderColor: "#d4d4d8" }
+                    }
+                  >
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddingCategory(false);
+                      setNewCategoryName("");
+                      setNewCategoryIcon(DEFAULT_CATEGORY_ICON_KEY);
+                    }}
+                    className="shrink-0 text-slate-400 dark:text-neutral-500 text-sm px-1"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {ICON_OPTIONS.map((option) => {
+                    const OptionIcon = option.icon;
+                    const isSelected = option.key === newCategoryIcon;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => setNewCategoryIcon(option.key)}
+                        aria-label={option.key}
+                        className="flex items-center justify-center rounded-lg h-8 w-8"
+                        style={{
+                          backgroundColor: isSelected
+                            ? isNight
+                              ? "#ffffff"
+                              : "#18181b"
+                            : isNight
+                              ? "#262626"
+                              : "#e5e5e5",
+                          color: isSelected
+                            ? isNight
+                              ? "#18181b"
+                              : "#ffffff"
+                            : isNight
+                              ? "#a3a3a3"
+                              : "#737373",
+                        }}
+                      >
+                        <OptionIcon size={16} strokeWidth={1.75} />
+                      </button>
+                    );
+                  })}
+                </div>
               </form>
             ) : (
               <button
@@ -167,9 +211,9 @@ export function LibraryTab({ topTabBar }: { topTabBar?: ReactNode }) {
               <ul className="divide-y divide-slate-100 dark:divide-neutral-800">
                 {group.items.map((item) => {
                   const category =
-                    allCategories.find((c) => c.id === item.categoryId) ??
-                    allCategories[allCategories.length - 1];
-                  const CategoryIcon = category.icon;
+                    categories.find((c) => c.id === item.categoryId) ??
+                    categories[categories.length - 1];
+                  const CategoryIcon = getCategoryIcon(category.iconKey);
                   return (
                     <LibraryItemRow
                       key={item.id}

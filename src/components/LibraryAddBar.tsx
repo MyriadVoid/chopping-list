@@ -1,13 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useListStore } from "../store/useListStore";
 import { useTheme } from "../theme/ThemeContext";
-import {
-  buildCategoryList,
-  CATEGORIES,
-  CHROME_BG_DAY,
-  CHROME_BG_NIGHT,
-  type CategoryId,
-} from "../types";
+import { CHROME_BG_DAY, CHROME_BG_NIGHT, type CategoryId } from "../types";
 import { CategoryPicker } from "./CategoryPicker";
 
 interface LibraryAddBarProps {
@@ -18,13 +12,12 @@ const fieldClass =
   "rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder:text-neutral-500";
 
 export function LibraryAddBar({ onAdd }: LibraryAddBarProps) {
+  const categories = useListStore((s) => s.categories);
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [categoryId, setCategoryId] = useState<CategoryId>(CATEGORIES[0].id);
+  const [categoryId, setCategoryId] = useState<CategoryId>(categories[0]?.id ?? "other");
   const { theme } = useTheme();
   const isNight = theme === "night";
-  const customCategories = useListStore((s) => s.customCategories);
-  const categories = buildCategoryList(customCategories);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
